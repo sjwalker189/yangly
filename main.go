@@ -46,15 +46,14 @@ func main() {
 	// IMPORTANT: Revisions cause duplicate modules
 
 	for name, module := range moduleSet.Modules {
-		log.Printf("Process module: %s\n", name)
-
 		entry := yang.ToEntry(module)
 		if entry != nil {
-			fmt.Printf("//    Root entry for %s: %s\n", name, entry.Path())
-
+			// TODO: Provide bufio writer into transformer
 			filename := fmt.Sprintf("%s.ts", module.Name)
 			header := fmt.Sprintf("// Module: %s (Namespace: %s)\n", name, module.Namespace.Name)
 			contents, err := transform.TypeScriptFromYangEntry(entry)
+
+			writeFile(filename, contents)
 
 			if err != nil {
 				panic(err)
@@ -81,4 +80,13 @@ func getYangFiles(dir string) ([]string, error) {
 		}
 	}
 	return files, nil
+}
+
+func writeFile(filename string, content string) {
+	file, err := os.Create(filepath.Join("./out", filename))
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	file.WriteString(content)
 }

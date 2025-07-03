@@ -19,6 +19,39 @@ func inspect(e *yang.Entry) {
 	fmt.Println()
 }
 
+func docblock(e *yang.Entry, tabsize int) string {
+	if e == nil {
+		return ""
+	}
+
+	indent := strings.Repeat(" ", tabsize)
+
+	var blocks []string
+
+	if e.Description != "" {
+		blocks = append(blocks, fmt.Sprintf("%s * %s", indent, e.Description))
+	}
+
+	if e.IsLeafList() {
+		defaults := e.DefaultValues()
+		if len(defaults) > 0 {
+			blocks = append(blocks, fmt.Sprintf("%s * @default [%s]", indent, strings.Join(e.DefaultValues(), ", ")))
+		}
+	} else {
+		val, ok := e.SingleDefaultValue()
+		if ok {
+			blocks = append(blocks, fmt.Sprintf("%s * @default %s", indent, val))
+		}
+
+	}
+
+	if len(blocks) > 0 {
+		return fmt.Sprintf("%s/**\n%s\n%s */\n", indent, strings.Join(blocks, "\n"), indent)
+	}
+
+	return ""
+}
+
 func TypeScriptFromYangEntry(e *yang.Entry) (string, error) {
 	if e == nil {
 		panic("Entry is nil")
@@ -61,7 +94,7 @@ func parseContainer(e *yang.Entry, level int) string {
 
 	for _, child := range e.Dir {
 
-		if child.Node.Kind() == "rpc" {
+		if child.RPC != nil {
 			continue
 		}
 
@@ -71,15 +104,37 @@ func parseContainer(e *yang.Entry, level int) string {
 			sb.WriteString(fmt.Sprintf("%s\"%s\"%s: %s;\n", indent, ident, optional(child), body))
 		} else {
 			if child.Type == nil {
-				inspect(child)
-				if child.Node.Kind() == "list" {
-					tsType, err := yangTypeToTypeScriptType(child.Type)
-					if err != nil {
-						log.Fatal(err)
+				if child.Kind == yang.DirectoryEntry && child.ListAttr != nil {
+
+					keyType := "string"
+					members := []string{}
+
+					for _, leaf := range child.Dir {
+						if leaf.IsContainer() {
+							ms := fmt.Sprintf("%s\"%s\"%s: %s;", strings.Repeat(" ", (level+1)*2), leaf.Name, optional(leaf), parseContainer(leaf, level+1))
+							members = append(members, docblock(leaf, (level+1)*2))
+							members = append(members, ms)
+						} else {
+							tsType, err := yangTypeToTypeScriptType(leaf.Type)
+							if err != nil {
+								log.Fatal(err)
+							}
+
+							ms := fmt.Sprintf("%s\"%s\"%s: %s;", strings.Repeat(" ", (level+1)*2), leaf.Name, optional(leaf), tsType)
+							members = append(members, docblock(leaf, (level+1)*2))
+							members = append(members, ms)
+							if leaf.Name == child.Key {
+								keyType = tsType
+							}
+						}
 					}
 
-					// TODO: we can determine the key type which is assoicated with the following record type
-					sb.WriteString(fmt.Sprintf("%s\"%s\"%s: Record<string, %s>;\n", indent, child.Name, optional(child), tsType))
+					if child.Type == nil {
+						fmt.Printf("%+v\n\n", child.Dir)
+					}
+
+					sb.WriteString(docblock(child, level*2))
+					sb.WriteString(fmt.Sprintf("%s\"%s\"%s: Record<%s, {\n%s\n%s}>;\n", indent, child.Name, optional(child), keyType, strings.Join(members, "\n"), indent))
 					continue
 				}
 
@@ -89,7 +144,7 @@ func parseContainer(e *yang.Entry, level int) string {
 						log.Fatal(err)
 					}
 
-					// TODO: we can determine the key type which is assoicated with the following record type
+					sb.WriteString(docblock(child, level*2))
 					sb.WriteString(fmt.Sprintf("%s\"%s\"%s: Array<%s>;\n", indent, child.Name, optional(child), tsType))
 					continue
 				}
@@ -99,6 +154,8 @@ func parseContainer(e *yang.Entry, level int) string {
 			if err != nil {
 				log.Fatal(err)
 			}
+
+			sb.WriteString(docblock(child, level*2))
 			sb.WriteString(fmt.Sprintf("%s\"%s\"%s: %s;\n", indent, child.Name, optional(child), tsType))
 		}
 	}
