@@ -6,18 +6,8 @@ import (
 	"strings"
 	"yangts/casing"
 
-	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/sjwalker189/goyang/pkg/yang"
 )
-
-func inspect(e *yang.Entry) {
-	fmt.Println()
-	fmt.Println("// Name: ", e.Name)
-	fmt.Println("// Kind: ", e.Kind.String())
-	fmt.Println("// NodeKind: ", e.Node.Kind())
-	fmt.Println("// Namespace.Name: ", e.Namespace().Name)
-	fmt.Println("// Namespace.Description: ", e.Namespace().Description)
-	fmt.Println()
-}
 
 func docblock(e *yang.Entry, tabsize int) string {
 	if e == nil {
@@ -29,7 +19,9 @@ func docblock(e *yang.Entry, tabsize int) string {
 	var blocks []string
 
 	if e.Description != "" {
-		blocks = append(blocks, fmt.Sprintf("%s * %s", indent, e.Description))
+		for _, str := range strings.Split(e.Description, "\n") {
+			blocks = append(blocks, fmt.Sprintf("%s * %s", indent, str))
+		}
 	}
 
 	if e.IsLeafList() {
@@ -63,7 +55,7 @@ func TypeScriptFromYangEntry(e *yang.Entry) (string, error) {
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("export type %s = %s;\n", casing.ToPascalCase(e.Name), parseContainer(e, 1)))
+	sb.WriteString(fmt.Sprintf("export interface %s %s;\n", casing.ToPascalCase(e.Name), parseContainer(e, 1)))
 
 	return sb.String(), nil
 }
@@ -127,10 +119,6 @@ func parseContainer(e *yang.Entry, level int) string {
 								keyType = tsType
 							}
 						}
-					}
-
-					if child.Type == nil {
-						fmt.Printf("%+v\n\n", child.Dir)
 					}
 
 					sb.WriteString(docblock(child, level*2))

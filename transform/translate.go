@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/sjwalker189/goyang/pkg/yang"
 )
 
 func yangTypeToTypeScriptType(yType *yang.YangType) (string, error) {
@@ -40,7 +40,8 @@ func yangTypeToTypeScriptType(yType *yang.YangType) (string, error) {
 		if len(enumValues) == 0 {
 			return "string", nil // Fallback if no enum values defined
 		}
-		return strings.Join(enumValues, " | "), nil
+
+		return strings.Join(unique(enumValues), " | "), nil
 	case yang.Yidentityref:
 		// TODO: Resolve the reference type
 		// Identityref points to an identity, typically represented as a string in data.
@@ -63,7 +64,7 @@ func yangTypeToTypeScriptType(yType *yang.YangType) (string, error) {
 		if len(unionMembers) == 0 {
 			return "any", nil // Fallback for an empty union (shouldn't happen in valid YANG)
 		}
-		return strings.Join(unionMembers, " | "), nil
+		return strings.Join(unique(unionMembers), " | "), nil
 	case yang.YinstanceIdentifier:
 		// YANG instance-identifier maps to a string path
 		return "string", nil
@@ -71,4 +72,16 @@ func yangTypeToTypeScriptType(yType *yang.YangType) (string, error) {
 
 	// Catch-all for unhandled YANG base types
 	return "any", fmt.Errorf("unhandled YANG base type: %s for leaf '%s'", yType.Kind, yType.Name)
+}
+
+func unique[T comparable](slice []T) []T {
+	seen := make(map[T]bool)
+	result := []T{}
+	for _, item := range slice {
+		if _, found := seen[item]; !found {
+			seen[item] = true
+			result = append(result, item)
+		}
+	}
+	return result
 }
