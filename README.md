@@ -1,8 +1,8 @@
-# YangTS
+# yangly
 
 > This project is a work in progress
 
-YangTS is a tool to produce TypeScript definitions from YANG types.
+yangly is a tool to produce TypeScript definitions from YANG types.
 
 
 ## Requirements
@@ -11,12 +11,12 @@ YangTS is a tool to produce TypeScript definitions from YANG types.
 - [Bat](https://github.com/sharkdp/bat) (optional)
 
 
-## Example Usage 
+## Example Usage
 
 ```bash
-# Runs yangts and pipes output to bat for inspection
-make run 
+# Runs yangly and pipes output to bat for inspection
+make run
 
-# Build the yangts binary
+# Build the yangly binary
 make build
 ```
