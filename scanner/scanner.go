@@ -17,11 +17,13 @@ func ScanDir(dir string) ([]string, error) {
 	for _, entry := range entries {
 		name := entry.Name()
 		path := filepath.Join(dir, name)
+
 		if entry.IsDir() {
 			f, err := ScanDir(path)
 			if err != nil {
 				return nil, err
 			}
+
 			files = append(files, f...)
 		} else if filepath.Ext(name) == ".yang" {
 			files = append(files, path)
@@ -30,4 +32,3 @@ func ScanDir(dir string) ([]string, error) {
 
 	return files, nil
 }
-

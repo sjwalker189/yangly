@@ -34,7 +34,10 @@ var genCmd = &cobra.Command{
 		moduleSet := yang.NewModules()
 
 		// Read all yangs
+		fmt.Println("Reading files: ")
+		fmt.Print(strings.Join(files, "\n"))
 		for _, file := range files {
+			moduleSet.AddPath(filepath.Dir(file))
 			if err := moduleSet.Read(file); err != nil {
 				log.Fatal("Failed to read yang module. ", err)
 			}
@@ -64,7 +67,7 @@ var genCmd = &cobra.Command{
 			parser := ast.NewParser(module)
 			typ, err, empty := parser.ParseSchema()
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 
 			if empty {
@@ -72,7 +75,11 @@ var genCmd = &cobra.Command{
 				continue
 			}
 
-			fpath := filepath.Join(fmt.Sprintf("types/%s.ts", module.Name))
+			if err := os.MkdirAll(outdir, os.ModePerm); err != nil {
+				log.Fatal(err)
+			}
+
+			fpath := filepath.Join(outdir, fmt.Sprintf("%s.ts", module.Name))
 			file, err := os.Create(fpath)
 			if err != nil {
 				panic(err)

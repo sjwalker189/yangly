@@ -1,7 +1,11 @@
+# Ignore go binaries
+yangly
+npm/bin/yangly*
+
+assets/
 yangs/
-derived-yangs/
-build/
-out/
+node_modules/
+
 
 
 

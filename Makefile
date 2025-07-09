@@ -1,9 +1,13 @@
 run:
-	mkdir -p out/dist/types # TODO
 	go run main.go
 
 build:
 	go build
 
+pkg:
+	go build -o npm/bin/yangly
+
 clean:
-	rm -r out/
+	rm -f yangly
+	rm -f npm/bin/yangly*
+	rm -rf npm/node_modules
