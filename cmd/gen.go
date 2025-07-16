@@ -20,11 +20,24 @@ var genCmd = &cobra.Command{
 	Use:   "gen",
 	Short: "Generate TypeScript interfaces from YANG schemas.",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Discover all .yang files
-		files, err := scanner.ScanDir(scandir)
 
+		var p string
+		if filepath.IsAbs(scandir) {
+			p = scandir
+		} else {
+			cwd, err := os.Getwd()
+			if err != nil {
+				log.Fatalf("Failed to scan directory: %s\n", scandir)
+			}
+			p = filepath.Join(cwd, scandir)
+		}
+
+		fmt.Println("Scanning directory: ", p)
+
+		// Discover all .yang files
+		files, err := scanner.ScanDir(p)
 		if err != nil {
-			log.Fatalf("Failed to scan directory %s\n", err)
+			log.Fatalf("Failed to scan directory: %s\n", p)
 		}
 
 		if len(files) == 0 {
