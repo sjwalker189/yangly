@@ -20,7 +20,7 @@ type Parser struct {
 }
 
 func (p Parser) SetStrict(v bool) Parser {
-	p.strict = true
+	p.strict = v
 	return p
 }
 
@@ -62,8 +62,8 @@ func (sp *Parser) parseEntry(e *yang.Entry) Type {
 	return Primitive{t: TS_ANY}
 }
 
-// ParseScheme produces a single interface from a
-// yang module containing yang containers only
+// ParseSchema produces a single interface from a
+// yang module containing yang schema containers only
 func (sp *Parser) ParseSchema() (Type, error, bool) {
 	if sp.yang == nil {
 		return nil, errors.New("Yang module is nil"), false
@@ -80,7 +80,7 @@ func (sp *Parser) ParseSchema() (Type, error, bool) {
 
 	for _, entry := range entry.Dir {
 		if entry.RPC != nil {
-			// Ignored: in rpc statements
+			// Ignored: used in rpc statements
 			continue
 		}
 

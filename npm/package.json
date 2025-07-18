@@ -1,24 +1,21 @@
 {
 	"name": "yangly",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"author": "Sam Walker",
 	"license": "MIT",
 	"description": "Generate TypeScript definitions from YANG modules.",
 	"main": "bin/main.mjs",
 	"type": "module",
 	"bin": "./bin/main.mjs",
-	"files": [
-		"./bin/**"
-	],
-	"homepage": "https://github.com/sjwalker189/yangly#readme",
+	"files": ["./bin/**", "README.md"],
+	"homepage": "https://github.com/sjwalker189/yangly/npm/#readme",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/sjwalker189/yangly.git"
+		"url": "git+https://github.com/sjwalker189/yangly.git",
+		"directory": "npm"
 	},
 	"bugs": {
 		"url": "https://github.com/sjwalker189/yangly/issues"
 	},
-	"keywords": [
-		"YANG"
-	]
+	"keywords": ["YANG", "TypeScript", "CodeGen"]
 }

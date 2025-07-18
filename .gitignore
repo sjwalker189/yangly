@@ -3,6 +3,7 @@ yangly
 npm/bin/yangly*
 
 assets/
+dist/
 yangs/
 node_modules/
 
